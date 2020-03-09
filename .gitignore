@@ -1,0 +1,10 @@
+# Video
+*.raw
+*.mov
+*.mp4
+*.avf
+
+# Audio
+*.wav
+*.u8
+*.aud
