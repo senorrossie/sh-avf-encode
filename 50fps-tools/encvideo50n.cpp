@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <fcntl.h>
-#include <io.h>
+//#include <io.h>
 #include <math.h>
 #include <algorithm>
 
@@ -39,7 +39,7 @@ float qtab[16];
 
 int main(int argc, const char **argv) {
 	setvbuf(stdin, NULL, _IONBF, 0);
-	_setmode(_fileno(stdin), _O_BINARY);
+	//_setmode(_fileno(stdin), _O_BINARY);
 
 	if (argc < 2) {
 		fprintf(stderr, "Output filename required.\n");

@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <io.h>
+//#include <io.h>
 
 int main(int argc, const char **argv) {
 	setvbuf(stdin, NULL, _IOFBF, 16384);
-	_setmode(_fileno(stdin), _O_BINARY);
+	//_setmode(_fileno(stdin), _O_BINARY);
 
 	if (argc < 2) {
 		fprintf(stderr, "Output filename required.\n");
