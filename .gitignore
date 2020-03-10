@@ -8,3 +8,6 @@
 *.wav
 *.u8
 *.aud
+
+# Workdir
+tmp
