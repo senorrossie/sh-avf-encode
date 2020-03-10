@@ -11,3 +11,6 @@
 
 # Workdir
 tmp
+
+# Outdir videos
+videos/*.avf
