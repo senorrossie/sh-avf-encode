@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-//#include <io.h>
+#ifdef _WIN32
+        #include <io.h>
+#endif
 
 int main(int argc, const char **argv) {
 	setvbuf(stdin, NULL, _IOFBF, 16384);
-	//_setmode(_fileno(stdin), _O_BINARY);
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+#endif
 
 	if (argc < 2) {
 		fprintf(stderr, "Output filename required.\n");
