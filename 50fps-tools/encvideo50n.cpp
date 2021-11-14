@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <fcntl.h>
-//#include <io.h>
+#ifdef _WIN32
+        #include <io.h>
+#endif
 #include <math.h>
 #include <algorithm>
 
@@ -39,7 +41,9 @@ float qtab[16];
 
 int main(int argc, const char **argv) {
 	setvbuf(stdin, NULL, _IONBF, 0);
-	//_setmode(_fileno(stdin), _O_BINARY);
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+#endif
 
 	if (argc < 2) {
 		fprintf(stderr, "Output filename required.\n");

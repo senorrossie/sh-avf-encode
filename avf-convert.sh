@@ -36,9 +36,9 @@ function encVideo() {
 
         echo "Encoding raw video into $FORMAT..."
         if [ "$FORMAT" = "NTSC" ]; then
-                /usr/local/bin/encvideo60n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
+                encvideo60n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
         else
-                /usr/local/bin/encvideo50n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
+                encvideo50n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
         fi
 
 }
@@ -58,12 +58,12 @@ function encAudio() {
         sox "${TMPFILE}.wav" -C 0.5 -c 1 -b 8 -r ${SRATE} ${sxNORM} "${TMPFILE}.u8" gain -l 10
 
         echo "Encoding audio..."
-        /usr/local/bin/encaudio60 < "${TMPFILE}.u8" "${TMPFILE}.aud"
+        encaudio60 < "${TMPFILE}.u8" "${TMPFILE}.aud"
 }
 
 function muxAV(){
         echo "Muxing A+V..."
-        /usr/local/bin/mux50n "${TMPFILE}.mov" "${TMPFILE}.aud" "${OUTDIR}${OUTFILE}-${FORMAT}.avf"
+        mux50n "${TMPFILE}.mov" "${TMPFILE}.aud" "${OUTDIR}${OUTFILE}-${FORMAT}.avf"
 }
 
 ### Main
