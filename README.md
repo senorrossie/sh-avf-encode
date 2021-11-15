@@ -9,12 +9,14 @@ Compile the 50fps-tools from phaeron first, and install them to a location in yo
 ```
 cd 50fps-tools
 PREFIX=/usr/local make
-sudo make install
+sudo PREFIX=/usr/local make install
 ```
 The above commands will install the binaries to /usr/local/bin
+
+**NOTE**: The 50fps-tools also contains the source (`*.s`) and compiled versions of the Atari [PAL](movplay50n.obx)- and the [NTSC](movplay50n.obx)-player.
 
 With the binaries in place you can use the script to convert your video to a format compatible with your Atari 8-bit:
 ```
 ./avf-convert.sh -F PAL -s myvideo.avi
 ```
-This should generate a PAL encoded `my_video.avf`. `-F NTSC` will convert to NTSC.
+This should generate a PAL encoded `my_video-PAL.avf`. `-F NTSC` will convert to NTSC.
