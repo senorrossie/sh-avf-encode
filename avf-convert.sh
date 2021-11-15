@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function do_Exit() {
         if [ -z "${E}" ]; then
@@ -30,22 +30,22 @@ function encVideo() {
         #  -sws software scaler
         #  -ofps Output fps
         echo "Dumping raw video..."
-        mencoder -nosound -of rawvideo -ovc raw \
+        $MENCODER -nosound -of rawvideo -ovc raw \
                 -vf hue=0:${HUE}${meSCALE}${meEXPAND},format=yv12,swapuv,harddup \
                 -sws 6 -ofps ${FPS} "${VIDIN}" -o "${TMPFILE}.raw" > "${TMPFILE}.mencode.log" 2>&1
 
         echo "Encoding raw video into $FORMAT..."
         if [ "$FORMAT" = "NTSC" ]; then
-                encvideo60n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
+                $ENCVIDEO60N < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
         else
-                encvideo50n < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
+                $ENCVIDEO50N < "${TMPFILE}.raw" "${TMPFILE}.mov" 1>/dev/null 2>/dev/null
         fi
 
 }
 
 function encAudio() {
         echo "Dumping audio to WAV..."
-        ffmpeg -y -i "${VIDIN}" "${TMPFILE}.wav" 1>/dev/null 2>/dev/null
+        $FFMPEG -y -i "${VIDIN}" "${TMPFILE}.wav" 1>/dev/null 2>/dev/null
 
         # Sox arguments:
         #  -C compression factor
@@ -55,21 +55,47 @@ function encAudio() {
         #  gain
         #    -l limiter (gain dB)
         echo "Converting WAV to U8..."
-        sox "${TMPFILE}.wav" -C 0.5 -c 1 -b 8 -r ${SRATE} ${sxNORM} "${TMPFILE}.u8" gain -l 10
+        $SOX "${TMPFILE}.wav" -C 0.5 -c 1 -b 8 -r ${SRATE} ${sxNORM} "${TMPFILE}.u8" gain -l 10
 
         echo "Encoding audio..."
-        encaudio60 < "${TMPFILE}.u8" "${TMPFILE}.aud"
+        $ENCAUDIO60 < "${TMPFILE}.u8" "${TMPFILE}.aud"
 }
 
 function muxAV(){
         echo "Muxing A+V..."
-        mux50n "${TMPFILE}.mov" "${TMPFILE}.aud" "${OUTDIR}${OUTFILE}-${FORMAT}.avf"
+        if [ "$FORMAT" = "NTSC" ]; then
+                $MUX60N "${TMPFILE}.mov" "${TMPFILE}.aud" "${OUTDIR}${OUTFILE}-${FORMAT}.avf"
+        else
+                $MUX50N "${TMPFILE}.mov" "${TMPFILE}.aud" "${OUTDIR}${OUTFILE}-${FORMAT}.avf"
+        fi
 }
 
 ### Main
 # Settings
 E=0     # Error
 R=""    # Result TXT
+
+# Tools used/needed
+ENCAUDIO60=$(which encaudio60)
+ENCVIDEO50N=$(which encvideo50n)
+ENCVIDEO60N=$(which encvideo60n)
+FFMPEG=$(which ffmpeg)
+MENCODER=$(which mencoder)
+MUX50N=$(which mux50n)
+MUX60N=$(which mux60n)
+SOX=$(which sox)
+
+if [ ${ENCAUDIO60}x == x ] || \
+   [ ${ENCVIDEO50N}x == x ] || \
+   [ ${ENCVIDEO60N}x == x ] || \
+   [ ${FFMPEG}x == x ] || \
+   [ ${MENCODER}x == x ] || \
+   [ ${MUX50N}x == x ] || \
+   [ ${SOX}x == x ]; then
+        E=1
+        R="One or more tools required to run were not found. Check presence of ffmpeg, mencoder, sox and the 50fps-tools."
+        do_Exit
+fi
 
 ### Parameter check
 # getopt paramchar: == -paramchar +argument
@@ -117,6 +143,7 @@ while getopts d:E:F:H:hN:s:S: PARAM; do
                         # Help
                         R="No help available.\n"
                         E=1
+                        do_Exit
                         ;;
 		N)
 			# Normalize (dB level)
