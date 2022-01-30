@@ -16,23 +16,8 @@ function do_Exit() {
 }
 
 function encVideo() {
-        # mencoder arguments:
-        #  -nosound
-        #  -of Output Format (rawvideo)
-        #  -ovc Video encoder (raw)
-        #  -vf 
-        #    hue
-        #    scale
-        #    expand
-        #    format
-        #    harddup (write every frame)
-        #    swapuv
-        #  -sws software scaler
-        #  -ofps Output fps
         echo "Dumping raw video..."
-        $MENCODER -nosound -of rawvideo -ovc raw \
-                -vf hue=0:${HUE}${meSCALE}${meEXPAND},format=yv12,swapuv,harddup \
-                -sws 6 -ofps ${FPS} "${VIDIN}" -o "${TMPFILE}.raw" > "${TMPFILE}.mencode.log" 2>&1
+	$FFMPEG -i "${VIDIN}" -c rawvideo -s ${EXPAND} -pix_fmt yuv420p -r ${FPS} "${TMPFILE}.yuv" && mv "${TMPFILE}".yuv "${TMPFILE}.raw"
 
         echo "Encoding raw video into $FORMAT..."
         if [ "$FORMAT" = "NTSC" ]; then
@@ -80,7 +65,6 @@ ENCAUDIO60=$(which encaudio60)
 ENCVIDEO50N=$(which encvideo50n)
 ENCVIDEO60N=$(which encvideo60n)
 FFMPEG=$(which ffmpeg)
-MENCODER=$(which mencoder)
 MUX50N=$(which mux50n)
 MUX60N=$(which mux60n)
 SOX=$(which sox)
@@ -89,11 +73,10 @@ if [ ${ENCAUDIO60}x == x ] || \
    [ ${ENCVIDEO50N}x == x ] || \
    [ ${ENCVIDEO60N}x == x ] || \
    [ ${FFMPEG}x == x ] || \
-   [ ${MENCODER}x == x ] || \
    [ ${MUX50N}x == x ] || \
    [ ${SOX}x == x ]; then
         E=1
-        R="One or more tools required to run were not found. Check presence of ffmpeg, mencoder, sox and the 50fps-tools."
+        R="One or more tools required to run were not found. Check presence of ffmpeg, sox and the 50fps-tools."
         do_Exit
 fi
 
@@ -102,15 +85,15 @@ fi
 #  example: ./progname -u argh == getopts u:
 # getopt paramchar  == -paramchar
 #  example: ./progname -h == getopts h
-while getopts d:E:F:H:hN:s:S: PARAM; do
+while getopts d:E:F:H:hN:s: PARAM; do
 	case $PARAM in
 		d)
 			# Destination file
 			OUTFILE=${OPTARG}
 			;;
                 E)
-                        # mencoder Expand
-                        meEXPAND=",expand=${OPTARG}"
+			# ffmpeg expand
+                        EXPAND="${OPTARG}"
                         ;;
 		F)
 			# Format
@@ -120,8 +103,7 @@ while getopts d:E:F:H:hN:s:S: PARAM; do
                                         HUE=${HUE:=1}
                                         FPS="49.86"
                                         SRATE=15558
-                                        meEXPAND=${meEXPAND:=",expand=160:192"}
-                                        meSCALE=${meSCALE:=",scale=77:192"}
+                                        EXPAND=${EXPAND:="160:192"}
                                         FORMAT=PAL
                                         ;;
                                 [nN]*)
@@ -129,8 +111,7 @@ while getopts d:E:F:H:hN:s:S: PARAM; do
                                         HUE=${HUE:=1.5}
                                         FPS="59.9227"
                                         SRATE=15700
-                                        meEXPAND=${meEXPAND:=",expand=160:192"}
-                                        meSCALE=${meSCALE:=",scale=77:192"}
+                                        EXPAND=${EXPAND:="160:192"}
                                         FORMAT=NTSC
                                         ;;
                         esac
@@ -153,10 +134,6 @@ while getopts d:E:F:H:hN:s:S: PARAM; do
 			# Source file
 			VIDIN=${OPTARG}
 			;;
-                S)
-                        # mencoder Scale
-                        meSCALE=",scale=${OPTARG}"
-                        ;;
 	esac
 done
 let RESULT=$?
@@ -175,7 +152,7 @@ fi
 
 OUTFILE=${OUTFILE:=my_video.avf}
 OUTFILE=${OUTFILE%.*}
-OUTDIR="videos/"
+OUTDIR=""
 
 TMPFILE=$(basename "${OUTFILE}")
 TMPFILE="tmp/${TMPFILE}"
